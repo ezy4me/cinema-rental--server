@@ -16,9 +16,11 @@ import { ConfigService } from '@nestjs/config';
 import { Cookie, Public, UserAgent } from '@common/decorators';
 import { UserResponse } from '@user/response';
 import { User } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
 const REFRESH_TOKEN = 'refreshtoken';
 
+@ApiTags('auth')
 @Public()
 @Controller('auth')
 export class AuthController {
