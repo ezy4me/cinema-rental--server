@@ -2,10 +2,14 @@ import { DatabaseService } from '@database/database.service';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { genSaltSync, hashSync } from 'bcrypt';
+import { CartService } from '@cart/cart.service';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly cartService: CartService,
+  ) {}
 
   async findOne(email: string): Promise<User | undefined> {
     return this.databaseService.user.findFirst({
@@ -26,13 +30,17 @@ export class UserService {
 
     const userRole = role !== undefined ? role : 'USER';
 
-    return this.databaseService.user.create({
+    const newUser = await this.databaseService.user.create({
       data: {
         email,
         password: this.hashPassword(password),
         role: userRole,
       },
     });
+
+    await this.cartService.create(newUser.id);
+
+    return newUser;
   }
 
   private hashPassword(password: string) {

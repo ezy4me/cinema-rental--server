@@ -22,8 +22,12 @@
       "@common/*": ["libs/common/src/*"],
       "@database": ["src/database"],
       "@database/*": ["src/database/*"],
+      "@file": ["src/file"],
+      "@file/*": ["src/file/*"],
       "@user": ["src/user"],
       "@user/*": ["src/user/*"],
+      "@cart": ["src/cart"],
+      "@cart/*": ["src/cart/*"],
       "@auth": ["src/auth"],
       "@auth/*": ["src/auth/*"],
     }

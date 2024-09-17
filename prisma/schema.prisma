@@ -62,7 +62,6 @@ model Equipment {
   name        String
   description String
   pricePerDay String
-  image       String
   quantity    Int
 
   cartEquipment   CartEquipment[]
@@ -76,6 +75,9 @@ model Equipment {
 
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  fileId Int
+  file   File @relation(fields: [fileId], references: [id], onDelete: Cascade)
 }
 
 model Status {
@@ -94,8 +96,10 @@ model Category {
   id          Int         @id @default(autoincrement())
   name        String
   description String
-  image       String
   equipment   Equipment[]
+
+  fileId Int
+  file   File @relation(fields: [fileId], references: [id], onDelete: Cascade)
 }
 
 model Rental {
@@ -129,4 +133,14 @@ model Payment {
 
   rentalId Int
   rental   Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+}
+
+model File {
+  id       Int    @id @default(autoincrement())
+  filename String
+  mimetype String
+  data     Bytes
+
+  equipment Equipment[]
+  category  Category[]
 }
