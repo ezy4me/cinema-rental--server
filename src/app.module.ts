@@ -15,6 +15,8 @@ import { FileModule } from './file/file.module';
 import { FileService } from './file/file.service';
 import { CustomerModule } from './customer/customer.module';
 import { CartModule } from './cart/cart.module';
+import { PaymentModule } from './payment/payment.module';
+import { RentalModule } from './rental/rental.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -29,6 +31,8 @@ import { CartModule } from './cart/cart.module';
     FileModule,
     CustomerModule,
     CartModule,
+    PaymentModule,
+    RentalModule,
   ],
   controllers: [AppController],
   providers: [
