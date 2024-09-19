@@ -9,21 +9,39 @@ export class CartEquipmentService {
   async findAllByCartId(cartId: number): Promise<CartEquipment[]> {
     return this.databaseService.cartEquipment.findMany({
       where: { cartId },
+      include: {
+        equipment: true,
+      },
     });
   }
 
   async addEquipmentToCart(
     cartId: number,
     equipmentId: number,
-    quantity: number,
   ): Promise<CartEquipment> {
-    return this.databaseService.cartEquipment.create({
-      data: {
+    let cartEquipment = await this.databaseService.cartEquipment.findFirst({
+      where: {
         cartId,
         equipmentId,
-        quantity,
       },
     });
+
+    if (cartEquipment) {
+      cartEquipment = await this.databaseService.cartEquipment.update({
+        where: { id: cartEquipment.id },
+        data: { quantity: cartEquipment.quantity + 1 },
+      });
+    } else {
+      cartEquipment = await this.databaseService.cartEquipment.create({
+        data: {
+          cartId,
+          equipmentId,
+          quantity: 1,
+        },
+      });
+    }
+
+    return cartEquipment;
   }
 
   async updateEquipmentQuantity(

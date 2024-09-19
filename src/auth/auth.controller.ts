@@ -77,12 +77,14 @@ export class AuthController {
     return res.sendStatus(HttpStatus.OK);
   }
 
-  @Get('refresh')
+  @Post('refresh')
   async refreshTokens(
     @Cookie(REFRESH_TOKEN) refreshToken: string,
     @Res() res: Response,
     @UserAgent() agent: string,
   ) {
+    console.log(refreshToken);
+
     if (!refreshToken) {
       throw new UnauthorizedException();
     }
@@ -108,7 +110,7 @@ export class AuthController {
       path: '/',
     });
     res.status(HttpStatus.CREATED).json({
-      accesToken: tokens.accesToken,
+      accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       user: user,
     });

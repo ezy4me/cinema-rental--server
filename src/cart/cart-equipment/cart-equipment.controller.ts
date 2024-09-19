@@ -11,12 +11,14 @@ import {
 import { CartEquipmentService } from './cart-equipment.service';
 import { CartEquipment } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
+import { Public } from '@common/decorators';
 
 @ApiTags('cart')
 @Controller('cart/equipment')
 export class CartEquipmentController {
   constructor(private readonly cartEquipmentService: CartEquipmentService) {}
 
+  @Public()
   @Get(':cartId')
   async findAllByCartId(
     @Param('cartId', ParseIntPipe) cartId: number,
@@ -28,13 +30,8 @@ export class CartEquipmentController {
   async addEquipmentToCart(
     @Param('cartId', ParseIntPipe) cartId: number,
     @Param('equipmentId', ParseIntPipe) equipmentId: number,
-    @Body('quantity', ParseIntPipe) quantity: number,
   ): Promise<CartEquipment> {
-    return this.cartEquipmentService.addEquipmentToCart(
-      cartId,
-      equipmentId,
-      quantity,
-    );
+    return this.cartEquipmentService.addEquipmentToCart(cartId, equipmentId);
   }
 
   @Put(':id')

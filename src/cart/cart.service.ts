@@ -25,6 +25,21 @@ export class CartService {
     return cart;
   }
 
+  async findOneByUserId(userId: number): Promise<Cart> {
+    const cart = await this.databaseService.cart.findUnique({
+      where: { userId },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!cart) {
+      throw new NotFoundException(`Cart with user ID ${userId} not found`);
+    }
+
+    return cart;
+  }
+
   async create(userId: number): Promise<Cart> {
     return this.databaseService.cart.create({
       data: {

@@ -38,7 +38,7 @@ export class UserService {
       },
     });
 
-    await this.cartService.create(newUser.id);
+    if (newUser.role === 'USER') await this.cartService.create(newUser.id);
 
     return newUser;
   }

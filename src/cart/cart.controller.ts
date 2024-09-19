@@ -1,4 +1,17 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Cart } from '@prisma/client';
+import { CartService } from './cart.service';
+import { Public } from '@common/decorators';
 
 @Controller('cart')
-export class CartController {}
+export class CartController {
+  constructor(private readonly cartEquipmentService: CartService) {}
+
+  @Public()
+  @Get(':userId')
+  async findAllByCartId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<Cart> {
+    return this.cartEquipmentService.findOneByUserId(userId);
+  }
+}

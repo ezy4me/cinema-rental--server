@@ -4,7 +4,6 @@ import { Reflector } from '@nestjs/core';
 
 enum Role {
   USER,
-  PSYCHOLOG,
   ADMIN,
 }
 
