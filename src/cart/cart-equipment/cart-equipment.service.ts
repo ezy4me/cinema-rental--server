@@ -45,40 +45,63 @@ export class CartEquipmentService {
   }
 
   async updateEquipmentQuantity(
-    cartEquipmentId: number,
+    cartId: number,
+    equipmentId: number,
     quantity: number,
   ): Promise<CartEquipment> {
-    const cartEquipment = await this.databaseService.cartEquipment.findUnique({
-      where: { id: cartEquipmentId },
+    const cartEquipment = await this.databaseService.cartEquipment.findFirst({
+      where: {
+        cartId,
+        equipmentId,
+      },
     });
 
     if (!cartEquipment) {
       throw new NotFoundException(
-        `CartEquipment with ID ${cartEquipmentId} not found`,
+        `CartEquipment with ID ${cartEquipment} not found`,
       );
     }
 
     return this.databaseService.cartEquipment.update({
-      where: { id: cartEquipmentId },
+      where: { id: cartEquipment.id },
       data: { quantity },
     });
   }
 
   async removeEquipmentFromCart(
-    cartEquipmentId: number,
+    cartId: number,
+    equipmentId: number,
   ): Promise<CartEquipment> {
-    const cartEquipment = await this.databaseService.cartEquipment.findUnique({
-      where: { id: cartEquipmentId },
+    const cartEquipment = await this.databaseService.cartEquipment.findFirst({
+      where: {
+        cartId,
+        equipmentId,
+      },
     });
-
     if (!cartEquipment) {
       throw new NotFoundException(
-        `CartEquipment with ID ${cartEquipmentId} not found`,
+        `CartEquipment with ID ${cartEquipment} not found`,
       );
     }
 
     return this.databaseService.cartEquipment.delete({
-      where: { id: cartEquipmentId },
+      where: { id: cartEquipment.id },
     });
+  }
+
+  async clearCart(cartId: number): Promise<boolean> {
+    const cartEquipments = await this.databaseService.cartEquipment.findMany({
+      where: { cartId },
+    });
+
+    if (cartEquipments.length === 0) {
+      throw new NotFoundException(`No items found in cart with ID ${cartId}`);
+    }
+
+    await this.databaseService.cartEquipment.deleteMany({
+      where: { cartId },
+    });
+
+    return true;
   }
 }

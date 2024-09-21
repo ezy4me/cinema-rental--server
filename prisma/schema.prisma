@@ -117,6 +117,7 @@ model Rental {
 
 model RentalEquipment {
   id Int @id @default(autoincrement())
+  quantity Int
 
   rentalId Int
   rental   Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)

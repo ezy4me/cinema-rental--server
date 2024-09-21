@@ -35,4 +35,17 @@ export class RentalService {
       where: { id: rentalId },
     });
   }
+
+  async getRentalsByUserId(userId: number): Promise<Rental[] | null> {
+    return this.databaseService.rental.findMany({
+      where: { userId },
+      include: {
+        rentalEquipment: {
+          include: {
+            equipment: true,
+          },
+        },
+      },
+    });
+  }
 }

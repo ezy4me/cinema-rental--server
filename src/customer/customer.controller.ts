@@ -23,9 +23,11 @@ export class CustomerController {
     return this.customerService.findAll();
   }
 
-  @Get(':id')
-  async findOneById(@Param('id', ParseIntPipe) id: number): Promise<Customer> {
-    return this.customerService.findOneById(id);
+  @Get(':userId')
+  async findOneByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<Customer> {
+    return this.customerService.findOneByUserId(userId);
   }
 
   @Post()

@@ -34,18 +34,34 @@ export class CartEquipmentController {
     return this.cartEquipmentService.addEquipmentToCart(cartId, equipmentId);
   }
 
-  @Put(':id')
+  @Put(':cartId/:equipmentId')
   async updateEquipmentQuantity(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('cartId', ParseIntPipe) cartId: number,
+    @Param('equipmentId', ParseIntPipe) equipmentId: number,
     @Body('quantity', ParseIntPipe) quantity: number,
   ): Promise<CartEquipment> {
-    return this.cartEquipmentService.updateEquipmentQuantity(id, quantity);
+    return this.cartEquipmentService.updateEquipmentQuantity(
+      cartId,
+      equipmentId,
+      quantity,
+    );
   }
 
-  @Delete(':id')
+  @Delete(':cartId/:equipmentId')
   async removeEquipmentFromCart(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('cartId', ParseIntPipe) cartId: number,
+    @Param('equipmentId', ParseIntPipe) equipmentId: number,
   ): Promise<CartEquipment> {
-    return this.cartEquipmentService.removeEquipmentFromCart(id);
+    return this.cartEquipmentService.removeEquipmentFromCart(
+      cartId,
+      equipmentId,
+    );
+  }
+
+  @Delete('/clear/:cartId')
+  async clearCart(
+    @Param('cartId', ParseIntPipe) cartId: number,
+  ): Promise<boolean> {
+    return this.cartEquipmentService.clearCart(cartId);
   }
 }

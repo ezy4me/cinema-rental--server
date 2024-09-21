@@ -52,4 +52,12 @@ export class RentalController {
   ): Promise<Rental | null> {
     return this.rentalService.deleteRental(rentalId);
   }
+
+  @Public()
+  @Get('/user/:userId')
+  async getRentalsByUserId(
+    @Param('userId', ParseIntPipe) userId: number,
+  ): Promise<Rental[] | null> {
+    return this.rentalService.getRentalsByUserId(userId);
+  }
 }

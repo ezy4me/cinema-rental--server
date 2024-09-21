@@ -11,13 +11,21 @@ export class CustomerService {
     return this.databaseService.customer.findMany();
   }
 
-  async findOneById(id: number): Promise<Customer> {
+  async findOneByUserId(userId: number): Promise<Customer> {
     const customer = await this.databaseService.customer.findUnique({
-      where: { id },
+      where: { userId },
+    });
+
+    return customer;
+  }
+
+  async findOneById(userId: number): Promise<Customer> {
+    const customer = await this.databaseService.customer.findUnique({
+      where: { userId },
     });
 
     if (!customer) {
-      throw new NotFoundException(`Customer with ID ${id} not found`);
+      throw new NotFoundException(`Customer with ID ${userId} not found`);
     }
 
     return customer;
@@ -36,10 +44,8 @@ export class CustomerService {
   }
 
   async update(id: number, dto: UpdateCustomerDto): Promise<Customer> {
-    await this.findOneById(id);
-
     return this.databaseService.customer.update({
-      where: { id },
+      where: { userId: id },
       data: {
         ...dto,
       },

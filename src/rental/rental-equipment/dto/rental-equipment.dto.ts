@@ -9,4 +9,8 @@ export class RentalEquipmentDto {
   @ApiProperty()
   @IsNumber()
   equipmentId: number;
+
+  @ApiProperty()
+  @IsNumber()
+  quantity: number;
 }
