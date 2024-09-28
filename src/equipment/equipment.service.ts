@@ -12,7 +12,12 @@ export class EquipmentService {
   ) {}
 
   async findAll(): Promise<Equipment[]> {
-    return this.databaseService.equipment.findMany();
+    return this.databaseService.equipment.findMany({
+      include: {
+        category: true,
+        brand: true,
+      },
+    });
   }
 
   async findOneById(id: number): Promise<Equipment> {
@@ -46,7 +51,6 @@ export class EquipmentService {
         pricePerDay: dto.pricePerDay,
         fileId: fileId,
         quantity: parseInt(dto.quantity.toString()),
-        statusId: parseInt(dto.statusId.toString()),
         brandId: parseInt(dto.brandId.toString()),
         categoryId: parseInt(dto.categoryId.toString()),
       },
@@ -71,6 +75,9 @@ export class EquipmentService {
       where: { id },
       data: {
         ...dto,
+        quantity: parseInt(dto.quantity.toString()),
+        brandId: parseInt(dto.brandId.toString()),
+        categoryId: parseInt(dto.categoryId.toString()),
         fileId: fileId ?? undefined,
       },
     });

@@ -8,7 +8,25 @@ export class RentalService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async getAllRentals(): Promise<Rental[]> {
-    return this.databaseService.rental.findMany();
+    return this.databaseService.rental.findMany({
+      include: {
+        user: {
+          include: {
+            customer: true,
+          },
+        },
+        rentalEquipment: {
+          select: {
+            equipment: {
+              include: {
+                category: true,
+                brand: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async getOneRentalById(rentalId: number): Promise<Rental | null> {

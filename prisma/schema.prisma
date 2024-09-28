@@ -67,9 +67,6 @@ model Equipment {
   cartEquipment   CartEquipment[]
   rentalEquipment RentalEquipment[]
 
-  statusId Int
-  status   Status @relation(fields: [statusId], references: [id], onDelete: Cascade)
-
   brandId Int
   brand   Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
@@ -80,11 +77,6 @@ model Equipment {
   file   File @relation(fields: [fileId], references: [id], onDelete: Cascade)
 }
 
-model Status {
-  id        Int         @id @default(autoincrement())
-  name      String
-  equipment Equipment[]
-}
 
 model Brand {
   id        Int         @id @default(autoincrement())

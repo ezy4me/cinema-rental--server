@@ -25,11 +25,6 @@ export class CreateEquipmentDto {
   @ApiProperty()
   @IsInt()
   @IsNotEmpty()
-  statusId: number;
-
-  @ApiProperty()
-  @IsInt()
-  @IsNotEmpty()
   brandId: number;
 
   @ApiProperty()
@@ -63,11 +58,6 @@ export class UpdateEquipmentDto {
   @IsInt()
   @IsOptional()
   quantity?: number;
-
-  @ApiProperty()
-  @IsInt()
-  @IsOptional()
-  statusId?: number;
 
   @ApiProperty()
   @IsInt()

@@ -8,7 +8,11 @@ export class CustomerService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async findAll(): Promise<Customer[]> {
-    return this.databaseService.customer.findMany();
+    return this.databaseService.customer.findMany({
+      include: {
+        user: true,
+      },
+    });
   }
 
   async findOneByUserId(userId: number): Promise<Customer> {

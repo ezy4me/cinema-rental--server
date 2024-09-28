@@ -19,6 +19,7 @@ import { User } from '@prisma/client';
 import { ApiTags } from '@nestjs/swagger';
 
 const REFRESH_TOKEN = 'refreshtoken';
+const USER_ROLE = 'user-role';
 
 @ApiTags('auth')
 @Public()
@@ -56,6 +57,14 @@ export class AuthController {
         `Не удалось войти с данными ${JSON.stringify(dto)}`,
       );
     }
+
+    res.cookie(USER_ROLE, tokens.user.role, {
+      httpOnly: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     this.setRefreshTokenToCookies(tokens.tokens, res, tokens.user);
   }
 
