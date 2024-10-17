@@ -17,6 +17,7 @@ import { CustomerModule } from './customer/customer.module';
 import { CartModule } from './cart/cart.module';
 import { PaymentModule } from './payment/payment.module';
 import { RentalModule } from './rental/rental.module';
+import { SmtpModule } from './smtp/smtp.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -33,6 +34,7 @@ import { RentalModule } from './rental/rental.module';
     CartModule,
     PaymentModule,
     RentalModule,
+    SmtpModule,
   ],
   controllers: [AppController],
   providers: [
