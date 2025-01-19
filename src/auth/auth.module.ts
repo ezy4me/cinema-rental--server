@@ -10,15 +10,25 @@ import { GUARDS } from './guards';
 import { UserService } from '@user/user.service';
 import { CartModule } from '@cart/cart.module';
 import { CartService } from '@cart/cart.service';
+import { CustomerModule } from 'src/customer/customer.module';
+import { CustomerService } from 'src/customer/customer.service';
 
 @Module({
-  providers: [AuthService, ...STRATEGIES, ...GUARDS, UserService, CartService],
+  providers: [
+    AuthService,
+    ...STRATEGIES,
+    ...GUARDS,
+    UserService,
+    CartService,
+    CustomerService,
+  ],
   controllers: [AuthController],
   imports: [
     PassportModule,
     JwtModule.registerAsync(options()),
     UserModule,
     CartModule,
+    CustomerModule,
   ],
 })
 export class AuthModule {}

@@ -18,6 +18,7 @@ import { CartModule } from './cart/cart.module';
 import { PaymentModule } from './payment/payment.module';
 import { RentalModule } from './rental/rental.module';
 import { SmtpModule } from './smtp/smtp.module';
+import { StatusModule } from './status/status.module';
 @Module({
   imports: [
     DatabaseModule,
@@ -35,6 +36,7 @@ import { SmtpModule } from './smtp/smtp.module';
     PaymentModule,
     RentalModule,
     SmtpModule,
+    StatusModule,
   ],
   controllers: [AppController],
   providers: [

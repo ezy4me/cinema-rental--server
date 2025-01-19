@@ -21,4 +21,9 @@ export class RentalDto {
   @IsInt()
   @IsNotEmpty()
   userId: number;
+
+  @ApiProperty()
+  @IsInt()
+  @IsNotEmpty()
+  statusId: number;
 }

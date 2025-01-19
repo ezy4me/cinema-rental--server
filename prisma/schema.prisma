@@ -32,7 +32,7 @@ model Customer {
   firstName  String
   secondName String
   lastName   String
-  phone      String @unique
+  phone      String 
 
   userId Int  @unique
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -77,7 +77,6 @@ model Equipment {
   file   File @relation(fields: [fileId], references: [id], onDelete: Cascade)
 }
 
-
 model Brand {
   id        Int         @id @default(autoincrement())
   name      String
@@ -103,12 +102,15 @@ model Rental {
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  statusId Int @default(1)
+  status   Status  @relation(fields: [statusId], references: [id], onDelete: Cascade)
+
   rentalEquipment RentalEquipment[]
   payment         Payment[]
 }
 
 model RentalEquipment {
-  id Int @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   quantity Int
 
   rentalId Int
@@ -126,6 +128,12 @@ model Payment {
 
   rentalId Int
   rental   Rental @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+}
+
+model Status {
+  id     Int      @id @default(autoincrement())
+  name   String
+  rental Rental[]
 }
 
 model File {

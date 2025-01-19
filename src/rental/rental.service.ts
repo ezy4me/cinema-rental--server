@@ -15,6 +15,7 @@ export class RentalService {
             customer: true,
           },
         },
+        status: true,
         rentalEquipment: {
           select: {
             equipment: {
@@ -58,6 +59,7 @@ export class RentalService {
     return this.databaseService.rental.findMany({
       where: { userId },
       include: {
+        status: true,
         rentalEquipment: {
           include: {
             equipment: true,
