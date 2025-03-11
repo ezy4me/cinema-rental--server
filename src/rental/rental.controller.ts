@@ -7,12 +7,14 @@ import {
   Body,
   ParseIntPipe,
   Delete,
+  Res,
 } from '@nestjs/common';
 import { RentalService } from './rental.service';
 import { Rental } from '@prisma/client';
 import { RentalDto } from './dto';
 import { Public } from '@common/decorators';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 
 @ApiTags('rental')
 @Controller('rental')
@@ -59,5 +61,22 @@ export class RentalController {
     @Param('userId', ParseIntPipe) userId: number,
   ): Promise<Rental[] | null> {
     return this.rentalService.getRentalsByUserId(userId);
+  }
+
+  @Put(':rentalId/status')
+  async updateRentalStatus(
+    @Param('rentalId', ParseIntPipe) rentalId: number,
+    @Body('statusId', ParseIntPipe) statusId: number,
+  ): Promise<Rental> {
+    return this.rentalService.updateRentalStatus(rentalId, statusId);
+  }
+
+  @Public()
+  @Get(':rentalId/document')
+  async generateRentalDocument(
+    @Param('rentalId', ParseIntPipe) rentalId: number,
+    @Res() res: Response,
+  ) {
+    return this.rentalService.generateRentalDocument(rentalId, res);
   }
 }

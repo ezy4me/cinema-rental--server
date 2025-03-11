@@ -1,4 +1,6 @@
+import { SmtpService } from './../smtp/smtp.service';
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -7,7 +9,7 @@ import {
 import { LoginDto, RegisterDto } from './dto';
 import { UserService } from '@user/user.service';
 import { Tokens } from './interfaces';
-import { compareSync } from 'bcrypt';
+import { compareSync, genSaltSync, hashSync } from 'bcrypt';
 import { User, Token } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { DatabaseService } from 'src/database/database.service';
@@ -21,6 +23,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly databaseService: DatabaseService,
     private readonly jwtService: JwtService,
+    private readonly smtpService: SmtpService,
   ) {}
 
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
@@ -129,5 +132,26 @@ export class AuthService {
 
   deleteRefreshToken(token: string) {
     return this.databaseService.token.delete({ where: { token } });
+  }
+
+  async forgotPassword(email: string) {
+    const user = await this.userService.findOne(email);
+    if (!user) {
+      throw new BadRequestException('Пользователь не найден');
+    }
+
+    const newPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = hashSync(newPassword, genSaltSync(2));
+
+    await this.databaseService.user.update({
+      where: { email },
+      data: { password: hashedPassword },
+    });
+
+    await this.smtpService.sendMail(
+      email,
+      'Восстановление пароля',
+      `Ваш новый пароль: ${newPassword}`,
+    );
   }
 }

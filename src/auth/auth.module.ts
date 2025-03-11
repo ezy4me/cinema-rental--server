@@ -1,3 +1,4 @@
+import { SmtpModule } from './../smtp/smtp.module';
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -12,6 +13,7 @@ import { CartModule } from '@cart/cart.module';
 import { CartService } from '@cart/cart.service';
 import { CustomerModule } from 'src/customer/customer.module';
 import { CustomerService } from 'src/customer/customer.service';
+import { SmtpService } from 'src/smtp/smtp.service';
 
 @Module({
   providers: [
@@ -21,6 +23,7 @@ import { CustomerService } from 'src/customer/customer.service';
     UserService,
     CartService,
     CustomerService,
+    SmtpService,
   ],
   controllers: [AuthController],
   imports: [
@@ -29,6 +32,7 @@ import { CustomerService } from 'src/customer/customer.service';
     UserModule,
     CartModule,
     CustomerModule,
+    SmtpModule,
   ],
 })
 export class AuthModule {}

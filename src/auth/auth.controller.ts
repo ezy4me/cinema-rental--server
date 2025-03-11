@@ -124,4 +124,10 @@ export class AuthController {
       user: user,
     });
   }
+
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    await this.authService.forgotPassword(email);
+    return { message: 'Новый пароль отправлен на email' };
+  }
 }
