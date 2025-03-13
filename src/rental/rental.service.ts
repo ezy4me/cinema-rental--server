@@ -13,8 +13,10 @@ import {
   AlignmentType,
   WidthType,
   TextRun,
+  ImageRun,
 } from 'docx';
 import { Response } from 'express';
+import * as QRCode from 'qrcode';
 
 @Injectable()
 export class RentalService {
@@ -101,20 +103,11 @@ export class RentalService {
     const rental = await this.databaseService.rental.findUnique({
       where: { id: rentalId },
       include: {
-        user: {
-          include: {
-            customer: true,
-          },
-        },
+        user: { include: { customer: true } },
         status: true,
         rentalEquipment: {
           include: {
-            equipment: {
-              include: {
-                category: true,
-                brand: true,
-              },
-            },
+            equipment: { include: { category: true, brand: true } },
           },
         },
       },
@@ -124,6 +117,17 @@ export class RentalService {
       throw new Error('Rental not found');
     }
 
+    const qrCodeDataUrl = await QRCode.toDataURL(
+      `https://payment.example.com/pay?rentalId=${rentalId}`,
+    );
+    const qrCodeBuffer = Buffer.from(qrCodeDataUrl.split(',')[1], 'base64');
+
+    const qrImage = new ImageRun({
+      data: qrCodeBuffer,
+      transformation: { width: 100, height: 100 },
+      type: 'png',
+    });
+
     const doc = new Document({
       sections: [
         {
@@ -131,39 +135,54 @@ export class RentalService {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: 'Информация о заказе аренды',
+                  text: 'ДОГОВОР АРЕНДЫ № ' + rentalId,
                   bold: true,
-                  size: 24,
+                  size: 32,
                 }),
               ],
-              heading: HeadingLevel.HEADING_1,
+              heading: HeadingLevel.TITLE,
               alignment: AlignmentType.CENTER,
-              spacing: { after: 200 },
+              spacing: { after: 300 },
             }),
 
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `Дата заказа: ${new Date(rental.startDate).toLocaleDateString()}`,
+                  text: `г. Казань \t\t ${new Date().toLocaleDateString()}`,
                   bold: true,
                 }),
               ],
-              alignment: AlignmentType.LEFT,
-              spacing: { after: 200 },
+              alignment: AlignmentType.RIGHT,
+              spacing: { after: 300 },
             }),
 
             new Paragraph({
               children: [
-                new TextRun({ text: 'Информация о клиенте:', bold: true }),
+                new TextRun({
+                  text: '1. Информация о заказчике',
+                  bold: true,
+                  size: 24,
+                }),
               ],
-              alignment: AlignmentType.LEFT,
-              spacing: { after: 100 },
+              spacing: { after: 200 },
             }),
+
             new Paragraph({
               text: `${rental.user.customer.firstName} ${rental.user.customer.secondName} ${rental.user.customer.lastName}`,
             }),
             new Paragraph({ text: `Email: ${rental.user.email}` }),
             new Paragraph({ text: `Телефон: ${rental.user.customer.phone}` }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '2. Условия аренды',
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 200 },
+            }),
 
             new Paragraph({
               children: [
@@ -177,8 +196,9 @@ export class RentalService {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `Сумма: ${rental.totalAmount} руб.`,
+                  text: `Сумма к оплате: ${rental.totalAmount} руб.`,
                   bold: true,
+                  size: 28,
                 }),
               ],
               spacing: { after: 300 },
@@ -187,12 +207,12 @@ export class RentalService {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: 'Список арендованного оборудования:',
+                  text: '3. Арендованное оборудование',
                   bold: true,
+                  size: 24,
                 }),
               ],
-              alignment: AlignmentType.LEFT,
-              spacing: { after: 100 },
+              spacing: { after: 200 },
             }),
 
             new Table({
@@ -200,22 +220,46 @@ export class RentalService {
                 new TableRow({
                   children: [
                     new TableCell({
-                      children: [new Paragraph({ text: 'Название товара' })],
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: 'Название', bold: true }),
+                          ],
+                        }),
+                      ],
                       width: { size: 30, type: WidthType.PERCENTAGE },
                       shading: { fill: 'd9d9d9' },
                     }),
                     new TableCell({
-                      children: [new Paragraph({ text: 'Категория' })],
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: 'Категория', bold: true }),
+                          ],
+                        }),
+                      ],
                       width: { size: 25, type: WidthType.PERCENTAGE },
                       shading: { fill: 'd9d9d9' },
                     }),
                     new TableCell({
-                      children: [new Paragraph({ text: 'Бренд' })],
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: 'Бренд', bold: true }),
+                          ],
+                        }),
+                      ],
                       width: { size: 25, type: WidthType.PERCENTAGE },
                       shading: { fill: 'd9d9d9' },
                     }),
                     new TableCell({
-                      children: [new Paragraph({ text: 'Количество' })],
+                      children: [
+                        new Paragraph({
+                          children: [
+                            new TextRun({ text: 'Количество', bold: true }),
+                          ],
+                        }),
+                      ],
                       width: { size: 20, type: WidthType.PERCENTAGE },
                       shading: { fill: 'd9d9d9' },
                     }),
@@ -254,15 +298,64 @@ export class RentalService {
               ],
             }),
 
+            new Paragraph({ spacing: { before: 400 } }),
             new Paragraph({
               children: [
                 new TextRun({
-                  text: 'Спасибо за использование наших услуг!',
+                  text: '4. Оплата',
                   bold: true,
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 200 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'QR-код для оплаты:',
+                  bold: true,
+                  size: 24,
                 }),
               ],
               alignment: AlignmentType.CENTER,
-              spacing: { before: 400 },
+            }),
+            new Paragraph({
+              children: [qrImage],
+              alignment: AlignmentType.CENTER,
+            }),
+
+            new Paragraph({ spacing: { before: 400 } }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '5. Подписи сторон',
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+              spacing: { after: 200 },
+            }),
+
+            new Paragraph({
+              children: [new TextRun({ text: 'Арендодатель: ___________' })],
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: 'Арендатор: ___________' })],
+              spacing: { after: 100 },
+            }),
+
+            new Paragraph({ spacing: { before: 400 } }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: 'Спасибо за сотрудничество!',
+                  bold: true,
+                  size: 24,
+                }),
+              ],
+              alignment: AlignmentType.CENTER,
             }),
           ],
         },
@@ -272,7 +365,7 @@ export class RentalService {
     const buffer = await Packer.toBuffer(doc);
     res.setHeader(
       'Content-Disposition',
-      'attachment; filename=rental_order.docx',
+      'attachment; filename=rental_agreement.docx',
     );
     res.setHeader(
       'Content-Type',
