@@ -204,7 +204,6 @@ export class RentalService {
               spacing: { after: 400 },
             }),
 
-            // 1. Предмет договора
             new Paragraph({
               children: [
                 new TextRun({
@@ -230,7 +229,6 @@ export class RentalService {
               spacing: { after: 100 },
             }),
 
-            // Список оборудования
             ...equipmentList.split('\n').map(
               (item) =>
                 new Paragraph({
@@ -253,7 +251,6 @@ export class RentalService {
               spacing: { after: 400 },
             }),
 
-            // 2. Стоимость аренды
             new Paragraph({
               children: [
                 new TextRun({
@@ -275,7 +272,6 @@ export class RentalService {
               spacing: { after: 400 },
             }),
 
-            // 3. Права и обязанности
             new Paragraph({
               children: [
                 new TextRun({
@@ -292,7 +288,6 @@ export class RentalService {
               children: [
                 new TextRun({
                   text: '3.1. Арендодатель вправе:',
-                  bold: true,
                 }),
               ],
               spacing: { after: 100 },
@@ -312,7 +307,6 @@ export class RentalService {
               children: [
                 new TextRun({
                   text: '3.2. Арендодатель обязуется:',
-                  bold: true,
                 }),
               ],
               spacing: { after: 100 },
@@ -332,7 +326,6 @@ export class RentalService {
               children: [
                 new TextRun({
                   text: '3.3. Арендатор вправе:',
-                  bold: true,
                 }),
               ],
               spacing: { after: 100 },
@@ -347,7 +340,6 @@ export class RentalService {
               children: [
                 new TextRun({
                   text: '3.4. Арендатор обязуется:',
-                  bold: true,
                 }),
               ],
               spacing: { after: 100 },
@@ -373,7 +365,6 @@ export class RentalService {
               spacing: { after: 400 },
             }),
 
-            // 4. Подписи сторон
             new Paragraph({
               children: [
                 new TextRun({
@@ -432,7 +423,6 @@ export class RentalService {
               ],
             }),
 
-            // QR-код для оплаты
             new Paragraph({
               children: [
                 new TextRun({
@@ -449,7 +439,6 @@ export class RentalService {
               spacing: { after: 400 },
             }),
 
-            // Контактная информация
             new Paragraph({
               text: 'Контактная информация Арендодателя:',
               alignment: AlignmentType.CENTER,
@@ -471,7 +460,6 @@ export class RentalService {
               spacing: { after: 400 },
             }),
 
-            // Заключительный текст
             new Paragraph({
               text: 'Спасибо за сотрудничество!',
               alignment: AlignmentType.CENTER,
@@ -482,7 +470,6 @@ export class RentalService {
       ],
     });
 
-    // Генерация и отправка документа
     const buffer = await Packer.toBuffer(doc);
     res.setHeader(
       'Content-Disposition',
