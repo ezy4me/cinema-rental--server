@@ -11,7 +11,6 @@ import {
   TableCell,
   HeadingLevel,
   AlignmentType,
-  WidthType,
   TextRun,
   ImageRun,
 } from 'docx';
@@ -117,6 +116,7 @@ export class RentalService {
       throw new Error('Rental not found');
     }
 
+    // Генерация QR-кода для оплаты
     const qrCodeDataUrl = await QRCode.toDataURL(
       `https://payment.example.com/pay?rentalId=${rentalId}`,
     );
@@ -128,57 +128,161 @@ export class RentalService {
       type: 'png',
     });
 
+    // Форматирование дат
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+    };
+
+    // Форматирование списка оборудования
+    const equipmentList = rental.rentalEquipment
+      .map(
+        (item) =>
+          `${item.equipment.brand.name} ${item.equipment.name} - ${item.quantity} шт.`,
+      )
+      .join(';\n');
+
+    // Расчет общей стоимости аренды (примерно)
+    const rentalDays = Math.ceil(
+      (new Date(rental.endDate).getTime() -
+        new Date(rental.startDate).getTime()) /
+        (1000 * 60 * 60 * 24),
+    );
+    const rentalCost = rental.totalAmount * rentalDays;
+
+    // Создание документа
     const doc = new Document({
       sections: [
         {
+          properties: {
+            page: {
+              margin: {
+                top: 1000,
+                right: 1000,
+                bottom: 1000,
+                left: 1000,
+              },
+            },
+          },
           children: [
+            // Шапка договора
             new Paragraph({
               children: [
                 new TextRun({
-                  text: 'ДОГОВОР АРЕНДЫ № ' + rentalId,
+                  text: 'ДОГОВОР АРЕНДЫ ФОТО- И ВИДЕОТЕХНИКИ',
                   bold: true,
-                  size: 32,
+                  size: 28,
+                  font: 'Times New Roman',
                 }),
               ],
               heading: HeadingLevel.TITLE,
               alignment: AlignmentType.CENTER,
-              spacing: { after: 300 },
+              spacing: { after: 400 },
             }),
 
+            // Город и дата
             new Paragraph({
-              children: [
-                new TextRun({
-                  text: `г. Казань \t\t ${new Date().toLocaleDateString()}`,
-                  bold: true,
-                }),
-              ],
+              text: `г. Казань\t\t\t${formatDate(new Date())}`,
               alignment: AlignmentType.RIGHT,
-              spacing: { after: 300 },
+              spacing: { after: 400 },
             }),
 
+            // Стороны договора
+            new Paragraph({
+              text: 'ООО "Cinema Rental Store", именуемый в рамках соглашения "Арендодатель", с одной стороны, и',
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: `${rental.user.customer.lastName} ${rental.user.customer.firstName} ${rental.user.customer.secondName}, именуемый в рамках соглашения "Арендатор", с другой стороны,`,
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: 'заключили настоящий договор о нижеследующем:',
+              spacing: { after: 400 },
+            }),
+
+            // 1. Предмет договора
             new Paragraph({
               children: [
                 new TextRun({
-                  text: '1. Информация о заказчике',
+                  text: '1. Предмет договора',
                   bold: true,
                   size: 24,
+                  font: 'Times New Roman',
                 }),
               ],
               spacing: { after: 200 },
             }),
 
             new Paragraph({
-              text: `${rental.user.customer.firstName} ${rental.user.customer.secondName} ${rental.user.customer.lastName}`,
+              text: '1.1. В рамках заключаемого договора Арендодатель сдает Арендатору фототехнику во временное пользование;',
+              spacing: { after: 100 },
             }),
-            new Paragraph({ text: `Email: ${rental.user.email}` }),
-            new Paragraph({ text: `Телефон: ${rental.user.customer.phone}` }),
+            new Paragraph({
+              text: '1.2. Сдача оборудования для фото в аренду осуществляется путем его передачи Арендатору на определенный соглашением срок;',
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: '1.3. Фототехника, сдаваемая во временное пользование, включает в себя следующее оборудование:',
+              spacing: { after: 100 },
+            }),
 
+            // Список оборудования
+            ...equipmentList.split('\n').map(
+              (item) =>
+                new Paragraph({
+                  text: item,
+                  indent: { left: 500 },
+                  spacing: { after: 50 },
+                }),
+            ),
+
+            new Paragraph({
+              text: '1.4. Арендатор оплачивает предоставление ему техники для фото во временное пользование в соответствии с условиями настоящего соглашения;',
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: `1.5. Срок аренды составляет ${rentalDays} дней, с ${formatDate(
+                new Date(rental.startDate),
+              )} по ${formatDate(
+                new Date(rental.endDate),
+              )}, и может продляться по договоренности с Арендодателем.`,
+              spacing: { after: 400 },
+            }),
+
+            // 2. Стоимость аренды
             new Paragraph({
               children: [
                 new TextRun({
-                  text: '2. Условия аренды',
+                  text: '2. Стоимость аренды',
                   bold: true,
                   size: 24,
+                  font: 'Times New Roman',
+                }),
+              ],
+              spacing: { after: 200 },
+            }),
+
+            new Paragraph({
+              text: `2.1. Стоимость предоставления указанной фототехники в аренду составляет ${rentalCost} рублей (${rental.totalAmount} руб./сутки);`,
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: '2.2. Оплата осуществляется путем денежного перевода на банковский счет Арендодателя, либо в наличном виде в момент заключения акта приема-передачи.',
+              spacing: { after: 400 },
+            }),
+
+            // 3. Права и обязанности
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '3. Права и обязанности сторон',
+                  bold: true,
+                  size: 24,
+                  font: 'Times New Roman',
                 }),
               ],
               spacing: { after: 200 },
@@ -187,181 +291,198 @@ export class RentalService {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `Статус аренды: ${rental.status.name}`,
+                  text: '3.1. Арендодатель вправе:',
                   bold: true,
                 }),
               ],
               spacing: { after: 100 },
             }),
             new Paragraph({
-              children: [
-                new TextRun({
-                  text: `Сумма к оплате: ${rental.totalAmount} руб.`,
-                  bold: true,
-                  size: 28,
-                }),
-              ],
-              spacing: { after: 300 },
+              text: '- Требовать передачи денежных средств за пользование Арендатором фототехники;',
+              indent: { left: 500 },
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: '- Требовать возмещения ущерба в случае его нанесения Арендатором.',
+              indent: { left: 500 },
+              spacing: { after: 100 },
             }),
 
             new Paragraph({
               children: [
                 new TextRun({
-                  text: '3. Арендованное оборудование',
+                  text: '3.2. Арендодатель обязуется:',
+                  bold: true,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: '- Передать во временное пользование оборудование, указанное в тексте настоящего соглашения на определенный договором срок;',
+              indent: { left: 500 },
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: '- Ознакомить Арендатора с требованиями к эксплуатации оборудования.',
+              indent: { left: 500 },
+              spacing: { after: 100 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '3.3. Арендатор вправе:',
+                  bold: true,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: '- Требовать предоставления фототехники во временное пользование после передачи арендной платы в адрес Арендодателя.',
+              indent: { left: 500 },
+              spacing: { after: 100 },
+            }),
+
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '3.4. Арендатор обязуется:',
+                  bold: true,
+                }),
+              ],
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: '- Использовать переданное ему оборудование исключительно в рамках его целевого назначения;',
+              indent: { left: 500 },
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: '- Бережно относиться к фототехнике, переданной во временное пользование;',
+              indent: { left: 500 },
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: '- Оплатить аренду оборудования в соответствии с условиями, прописанными в настоящем договоре;',
+              indent: { left: 500 },
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: '- Нести ответственность в случае нанесения ущерба оборудованию, в соответствии с оценкой имущества Арендодателем.',
+              indent: { left: 500 },
+              spacing: { after: 400 },
+            }),
+
+            // 4. Подписи сторон
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: '4. Подписи сторон',
                   bold: true,
                   size: 24,
+                  font: 'Times New Roman',
                 }),
               ],
               spacing: { after: 200 },
             }),
 
             new Table({
+              columnWidths: [50, 50],
               rows: [
                 new TableRow({
                   children: [
                     new TableCell({
                       children: [
                         new Paragraph({
-                          children: [
-                            new TextRun({ text: 'Название', bold: true }),
-                          ],
+                          text: 'Арендодатель:',
+                          spacing: { after: 200 },
+                        }),
+                        new Paragraph({
+                          text: 'ООО "Cinema Rental Store"',
+                          spacing: { after: 200 },
+                        }),
+                        new Paragraph({
+                          text: '___________________________',
+                          spacing: { after: 100 },
+                        }),
+                        new Paragraph({
+                          text: 'М.П.',
+                          spacing: { after: 100 },
                         }),
                       ],
-                      width: { size: 30, type: WidthType.PERCENTAGE },
-                      shading: { fill: 'd9d9d9' },
                     }),
                     new TableCell({
                       children: [
                         new Paragraph({
-                          children: [
-                            new TextRun({ text: 'Категория', bold: true }),
-                          ],
+                          text: 'Арендатор:',
+                          spacing: { after: 200 },
                         }),
-                      ],
-                      width: { size: 25, type: WidthType.PERCENTAGE },
-                      shading: { fill: 'd9d9d9' },
-                    }),
-                    new TableCell({
-                      children: [
                         new Paragraph({
-                          children: [
-                            new TextRun({ text: 'Бренд', bold: true }),
-                          ],
+                          text: `${rental.user.customer.lastName} ${rental.user.customer.firstName} ${rental.user.customer.secondName}`,
+                          spacing: { after: 200 },
                         }),
-                      ],
-                      width: { size: 25, type: WidthType.PERCENTAGE },
-                      shading: { fill: 'd9d9d9' },
-                    }),
-                    new TableCell({
-                      children: [
                         new Paragraph({
-                          children: [
-                            new TextRun({ text: 'Количество', bold: true }),
-                          ],
+                          text: '___________________________',
+                          spacing: { after: 100 },
                         }),
                       ],
-                      width: { size: 20, type: WidthType.PERCENTAGE },
-                      shading: { fill: 'd9d9d9' },
                     }),
                   ],
                 }),
-
-                ...rental.rentalEquipment.map(
-                  (item) =>
-                    new TableRow({
-                      children: [
-                        new TableCell({
-                          children: [
-                            new Paragraph({ text: item.equipment.name }),
-                          ],
-                        }),
-                        new TableCell({
-                          children: [
-                            new Paragraph({
-                              text: item.equipment.category.name,
-                            }),
-                          ],
-                        }),
-                        new TableCell({
-                          children: [
-                            new Paragraph({ text: item.equipment.brand.name }),
-                          ],
-                        }),
-                        new TableCell({
-                          children: [
-                            new Paragraph({ text: item.quantity.toString() }),
-                          ],
-                        }),
-                      ],
-                    }),
-                ),
               ],
             }),
 
-            new Paragraph({ spacing: { before: 400 } }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: '4. Оплата',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-              spacing: { after: 200 },
-            }),
-
+            // QR-код для оплаты
             new Paragraph({
               children: [
                 new TextRun({
                   text: 'QR-код для оплаты:',
                   bold: true,
-                  size: 24,
                 }),
               ],
               alignment: AlignmentType.CENTER,
+              spacing: { before: 400, after: 200 },
             }),
             new Paragraph({
               children: [qrImage],
               alignment: AlignmentType.CENTER,
+              spacing: { after: 400 },
             }),
 
-            new Paragraph({ spacing: { before: 400 } }),
+            // Контактная информация
             new Paragraph({
-              children: [
-                new TextRun({
-                  text: '5. Подписи сторон',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-              spacing: { after: 200 },
-            }),
-
-            new Paragraph({
-              children: [new TextRun({ text: 'Арендодатель: ___________' })],
-              spacing: { after: 100 },
-            }),
-            new Paragraph({
-              children: [new TextRun({ text: 'Арендатор: ___________' })],
-              spacing: { after: 100 },
-            }),
-
-            new Paragraph({ spacing: { before: 400 } }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: 'Спасибо за сотрудничество!',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
+              text: 'Контактная информация Арендодателя:',
               alignment: AlignmentType.CENTER,
+              spacing: { after: 100 },
+            }),
+            new Paragraph({
+              text: 'Телефон: +7 (123) 456-78-90',
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: 'Email: info@cinemarentalstore.com',
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 50 },
+            }),
+            new Paragraph({
+              text: 'Адрес: г. Казань, ул. Примерная, д. 123',
+              alignment: AlignmentType.CENTER,
+              spacing: { after: 400 },
+            }),
+
+            // Заключительный текст
+            new Paragraph({
+              text: 'Спасибо за сотрудничество!',
+              alignment: AlignmentType.CENTER,
+              spacing: { before: 400 },
             }),
           ],
         },
       ],
     });
 
+    // Генерация и отправка документа
     const buffer = await Packer.toBuffer(doc);
     res.setHeader(
       'Content-Disposition',
